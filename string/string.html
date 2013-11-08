@@ -1,0 +1,271 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>字符串处理函数 &mdash; Nessus NASL脚本参考手册 1.0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/pyramid.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="Nessus NASL脚本参考手册 1.0.1 documentation" href="../index.html" />
+    <link rel="next" title="编写一个Nessus安全测试脚本" href="../test/test.html" />
+    <link rel="prev" title="NASL网络相关函数" href="../network/network.html" /> 
+
+<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Neuton&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
+<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Nobile:regular,italic,bold,bolditalic&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
+<!--[if lte IE 6]>
+<link rel="stylesheet" href="../_static/ie6.css" type="text/css" media="screen" charset="utf-8" />
+<![endif]-->
+
+
+  </head>
+  <body>
+
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../test/test.html" title="编写一个Nessus安全测试脚本"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../network/network.html" title="NASL网络相关函数"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Nessus NASL脚本参考手册 1.0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="id1">
+<h1>字符串处理函数<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h1>
+<p>NASL可以像处理数字一样处理字符串。所以你可以安心的使用==, &lt; , &gt;操作符。</p>
+<p>例子:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">a</span> <span class="o">=</span> <span class="s">&quot;version 1.2.3&quot;</span><span class="p">;</span>
+<span class="n">b</span> <span class="o">=</span> <span class="s">&quot;version 1.4.1&quot;</span><span class="p">;</span>
+
+<span class="k">if</span><span class="p">(</span><span class="n">a</span> <span class="o">&lt;</span> <span class="n">b</span><span class="p">)</span>
+<span class="p">{</span>
+        <span class="c">#</span>
+        <span class="c"># Will be executed, since version 1.2.3 is lower</span>
+        <span class="c"># than version 1.4.1</span>
+<span class="p">}</span>
+
+<span class="n">c</span> <span class="o">=</span> <span class="s">&quot;version 1.2.3&quot;</span><span class="p">;</span>
+
+<span class="k">if</span><span class="p">(</span><span class="n">a</span><span class="o">==</span><span class="n">c</span><span class="p">)</span>
+<span class="p">{</span>
+        <span class="c"># Will also be evaluated</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>也可以获取字符串的某个字符，类似C:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">a</span> <span class="o">=</span> <span class="s">&quot;test&quot;</span><span class="p">;</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">a</span><span class="p">[</span><span class="mi">1</span><span class="p">];</span>  <span class="c"># b equals to &quot;e&quot;</span>
+</pre></div>
+</div>
+<p>也可以加减两个字符串:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">a</span> <span class="o">=</span> <span class="s">&quot;version 1.2.3&quot;</span><span class="p">;</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">a</span> <span class="o">-</span> <span class="s">&quot;version &quot;</span><span class="p">;</span>   <span class="c"># b equals &quot;1.2.3&quot;</span>
+
+<span class="n">a</span> <span class="o">=</span> <span class="s">&quot;this is a test&quot;</span><span class="p">;</span>
+<span class="n">b</span> <span class="o">=</span> <span class="s">&quot; is a &quot;</span><span class="p">;</span>
+<span class="n">c</span> <span class="o">=</span> <span class="n">a</span> <span class="o">-</span> <span class="n">b</span><span class="p">;</span>            <span class="c"># c equals to &quot;this test&quot;</span>
+
+<span class="n">a</span> <span class="o">=</span> <span class="s">&quot;test&quot;</span><span class="p">;</span>
+<span class="n">a</span> <span class="o">=</span> <span class="n">a</span><span class="o">+</span><span class="n">a</span><span class="p">;</span>              <span class="c"># a equals to &quot;testtest&quot;</span>
+</pre></div>
+</div>
+<p>除此之外，还有&gt;&lt;操作符。NASL定义了很多函数去构造和修改字符串。</p>
+<div class="toctree-wrapper compound">
+<ul class="simple">
+</ul>
+</div>
+<div class="section" id="ereg">
+<span id="string"></span><h2>处理正则表达式的ereg()函数<a class="headerlink" href="#ereg" title="Permalink to this headline">¶</a></h2>
+<p>模式匹配通过ereg()函数完成。语法如下:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">result</span> <span class="o">=</span> <span class="n">ereg</span><span class="p">(</span><span class="n">pattern</span><span class="p">:</span><span class="o">&lt;</span><span class="n">pattern</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">string</span><span class="p">:</span><span class="o">&lt;</span><span class="n">string</span><span class="o">&gt;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>正则匹配是egrep风格。细节请参考 <a class="reference external" href="http://unixhelp.ed.ac.uk/CGI/man-cgi?egrep">egrep</a> 手册.。</p>
+<p>例子:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">if</span><span class="p">(</span><span class="n">ereg</span><span class="p">(</span><span class="n">pattern</span><span class="p">:</span><span class="s">&quot;.*&quot;</span><span class="p">,</span> <span class="n">string</span><span class="p">:</span><span class="s">&quot;test&quot;</span><span class="p">))</span>
+<span class="p">{</span>
+  <span class="n">display</span><span class="p">(</span><span class="s">&quot;Always executed</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="n">mystring</span> <span class="o">=</span> <span class="n">recv</span><span class="p">(</span><span class="n">socket</span><span class="p">:</span><span class="n">soc</span><span class="p">,</span> <span class="n">length</span><span class="p">:</span><span class="mi">1024</span><span class="p">);</span>
+<span class="k">if</span><span class="p">(</span><span class="n">ereg</span><span class="p">(</span><span class="n">pattern</span><span class="p">:</span> <span class="s">&quot;SSH-.*-1\..*&quot;</span><span class="p">,</span> <span class="n">string</span> <span class="p">:</span> <span class="n">mystring</span><span class="p">))</span>
+<span class="p">{</span>
+        <span class="n">display</span><span class="p">(</span><span class="s">&quot;SSH 1.x is running on this host&quot;</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="id2">
+<h2>egrep()函数<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
+<p>egrep()函数返回多行文本中匹配的第一行。当用于单行文本时，作用类似ereg()函数。如果没有匹配项，则返回FALSE。语法如下:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="nb">str</span> <span class="o">=</span> <span class="n">egrep</span><span class="p">(</span><span class="n">pattern</span> <span class="p">:</span> <span class="o">&lt;</span><span class="n">pattern</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">string</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">string</span><span class="o">&gt;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>例子:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">soc</span> <span class="o">=</span> <span class="n">open_soc_tcp</span><span class="p">(</span><span class="mi">80</span><span class="p">);</span>
+<span class="nb">str</span> <span class="o">=</span> <span class="n">string</span><span class="p">(</span><span class="s">&quot;HEAD / HTTP/1.0</span><span class="se">\r\n\r\n</span><span class="s">&quot;</span><span class="p">);</span>
+<span class="n">send</span><span class="p">(</span><span class="n">socket</span><span class="p">:</span><span class="n">soc</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span><span class="nb">str</span><span class="p">);</span>
+
+<span class="n">r</span> <span class="o">=</span> <span class="n">recv</span><span class="p">(</span><span class="n">socket</span><span class="p">:</span><span class="n">soc</span><span class="p">,</span> <span class="n">length</span><span class="p">:</span><span class="mi">1024</span><span class="p">);</span>
+<span class="n">server</span> <span class="o">=</span> <span class="n">egrep</span><span class="p">(</span><span class="n">pattern</span><span class="p">:</span><span class="s">&quot;^Server.*&quot;</span><span class="p">,</span> <span class="n">string</span> <span class="p">:</span> <span class="n">r</span><span class="p">);</span>
+
+<span class="k">if</span><span class="p">(</span><span class="n">server</span><span class="p">)</span><span class="n">display</span><span class="p">(</span><span class="n">server</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="crap">
+<h2>crap()函数<a class="headerlink" href="#crap" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>crap()函数在测试缓冲区溢出很方便。它的语法如下：</dt>
+<dd><ul class="first last simple">
+<li>crap(&lt;length&gt;)</li>
+<li>crap(length:&lt;length&gt;, data:&lt;data&gt;)</li>
+</ul>
+</dd>
+</dl>
+<p>例子:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">a</span> <span class="o">=</span> <span class="n">crap</span><span class="p">(</span><span class="mi">5</span><span class="p">);</span>                            <span class="c"># a = &quot;XXXXX&quot;;</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">crap</span><span class="p">(</span><span class="mi">4096</span><span class="p">);</span>                         <span class="c"># b = &quot;XXXX...XXXX&quot; (4096 X&#39;s)</span>
+<span class="n">c</span> <span class="o">=</span> <span class="n">crap</span><span class="p">(</span><span class="n">length</span><span class="p">:</span><span class="mi">12</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span><span class="s">&quot;hello&quot;</span><span class="p">);</span>      <span class="c"># c = &quot;hellohellohe&quot; (length: 12);</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="id3">
+<h2>string()函数<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h2>
+<p>该函数用于从字符或者字符串中产生一个新的字符串。
+语法为：</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">string</span><span class="p">(</span><span class="o">&lt;</span><span class="n">string1</span><span class="o">&gt;</span><span class="p">,</span> <span class="p">[</span><span class="o">&lt;</span><span class="n">string2</span><span class="o">&gt;</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="o">&lt;</span><span class="n">stringN</span><span class="o">&gt;</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>该函数会转义特殊字符，例如n 或者 t。</p>
+<p>例子：</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">name</span> <span class="o">=</span> <span class="s">&quot;Renaud&quot;</span><span class="p">;</span>
+
+<span class="n">a</span> <span class="o">=</span> <span class="n">string</span><span class="p">(</span><span class="s">&quot;Hello, I am &quot;</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span>         <span class="c"># a equals to &quot;Hello, I am Renaud&quot;</span>
+                                                <span class="c"># (with a new line at the end)</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">string</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s">&quot; and &quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="s">&quot; makes &quot;</span><span class="p">,</span> <span class="mi">1</span><span class="o">+</span><span class="mi">2</span><span class="p">);</span>      <span class="c"># b equals to &quot;1 and 2 makes 3&quot;</span>
+<span class="n">c</span> <span class="o">=</span> <span class="n">string</span><span class="p">(</span><span class="s">&quot;MKD &quot;</span><span class="p">,</span> <span class="n">crap</span><span class="p">(</span><span class="mi">4096</span><span class="p">),</span> <span class="s">&quot;</span><span class="se">\r\n</span><span class="s">&quot;</span><span class="p">);</span>         <span class="c"># c equals to &quot;MKD XXXXX.....XXXX&quot;</span>
+                                                <span class="c"># (4096 X&#39;s) followed by a carriage</span>
+                                                <span class="c"># return and a new line</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="strlen">
+<h2>strlen()函数<a class="headerlink" href="#strlen" title="Permalink to this headline">¶</a></h2>
+<p>返回字符串的长度。</p>
+<p>例子:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">a</span> <span class="o">=</span> <span class="n">strlen</span><span class="p">(</span><span class="s">&quot;abcd&quot;</span><span class="p">);</span> <span class="c"># a is equal to 4</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="raw-string">
+<h2>raw_string()函数<a class="headerlink" href="#raw-string" title="Permalink to this headline">¶</a></h2>
+<p>整数转换成字符串。</p>
+<p>例子：</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">a</span> <span class="o">=</span> <span class="n">raw_string</span><span class="p">(</span><span class="mi">80</span><span class="p">,</span> <span class="mi">81</span><span class="p">,</span> <span class="mi">82</span><span class="p">);</span> <span class="c"># a equals to &#39;PQR&#39;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="strtoint">
+<h2>strtoint()函数<a class="headerlink" href="#strtoint" title="Permalink to this headline">¶</a></h2>
+<p>该函数用于将一个NASL整数转换成二进制整数。语法为：</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">value</span> <span class="o">=</span> <span class="n">strtoint</span><span class="p">(</span><span class="n">number</span><span class="p">:</span><span class="o">&lt;</span><span class="n">nasl_integer</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">size</span><span class="p">:</span><span class="o">&lt;</span><span class="n">number_of_bytes</span><span class="o">&gt;</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>这个函数适合同raw_string()配合使用。size参数是NASL整形的字节数，必填参数，可以是1,2,4。</p>
+</div>
+<div class="section" id="tolower">
+<h2>tolower()函数<a class="headerlink" href="#tolower" title="Permalink to this headline">¶</a></h2>
+<p>该函数用于将字符串转换成小写。语法是:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">tolower</span><span class="p">(</span><span class="o">&lt;</span><span class="n">string</span><span class="o">&gt;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>返回值是参数&lt;string&gt;的小写字符串。</p>
+<p>例子:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">a</span> <span class="o">=</span> <span class="s">&quot;Hello&quot;</span><span class="p">;</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">tolower</span><span class="p">(</span><span class="n">a</span><span class="p">);</span> <span class="c"># b equals to &quot;hello&quot;</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+
+            <div class="section" id="discuss">
+    <h2>
+        讨论
+        <a class="headerlink" href="#discuss" title="永久链接至标题">¶</a>
+    </h2>
+    <div id="disqus_thread"></div>
+    <script type="text/javascript">
+        /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+        var disqus_shortname = 'YOUR-DISQUS-FORUM-SHORTNAME'; // required: replace example with your forum shortname
+
+        /* * * DON'T EDIT BELOW THIS LINE * * */
+        (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../test/test.html" title="编写一个Nessus安全测试脚本"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../network/network.html" title="NASL网络相关函数"
+             >previous</a> |</li>
+        <li><a href="../index.html">Nessus NASL脚本参考手册 1.0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Xiaxiaoyu.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.2b3.
+    </div>
+  </body>
+</html>

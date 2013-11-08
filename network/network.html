@@ -1,0 +1,448 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>NASL网络相关函数 &mdash; Nessus NASL脚本参考手册 1.0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/pyramid.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="Nessus NASL脚本参考手册 1.0.1 documentation" href="../index.html" />
+    <link rel="next" title="简介" href="../string/string.html" />
+    <link rel="prev" title="基础：NASL语法" href="../basics/basics.html" /> 
+
+<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Neuton&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
+<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Nobile:regular,italic,bold,bolditalic&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
+<!--[if lte IE 6]>
+<link rel="stylesheet" href="../_static/ie6.css" type="text/css" media="screen" charset="utf-8" />
+<![endif]-->
+
+
+  </head>
+  <body>
+
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../string/string.html" title="简介"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../basics/basics.html" title="基础：NASL语法"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Nessus NASL脚本参考手册 1.0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="nasl">
+<h1>NASL网络相关函数<a class="headerlink" href="#nasl" title="Permalink to this headline">¶</a></h1>
+<p>NASL不会允许打开连接到非目的主机的socket。</p>
+<div class="toctree-wrapper compound">
+<ul class="simple">
+</ul>
+</div>
+<div class="section" id="id1">
+<h2>套接字处理<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<p>套接字(socket)是通过TCP或者UDP同其他主机通信的一种方式。就像一个管道，在给定的协议和端口上发送数据。</p>
+<div class="section" id="id2">
+<h3>如何打开一个套接字<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<p>open_sock_tcp()和open_sock_udp()会打开一个TCP或者UDP socket。这两个函数使用匿名参数。现在，每次尽可以在一个端口打开socket。将来可能会解决这个问题。</p>
+<p>例如：</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># Open a socket on TCP port 80 :</span>
+<span class="n">soc1</span> <span class="o">=</span> <span class="n">open_sock_tcp</span><span class="p">(</span><span class="mi">80</span><span class="p">);</span>
+<span class="c"># Open a socket on UDP port 123 :</span>
+<span class="n">soc2</span> <span class="o">=</span> <span class="n">open_sock_udp</span><span class="p">(</span><span class="mi">123</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>如果同远程主机无法建立连接，open_sock函数会返回0。通常open_sock_udp()永远不会失败，因为没法确定远程主机的UDP端口是否开放。open_sock_tcp()方法在远程主机端口关闭的情况下会返回0。</p>
+<p>一个简单的TCP端口扫描的例子：</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">start</span> <span class="o">=</span> <span class="n">prompt</span><span class="p">(</span><span class="s">&quot;First port to scan ? &quot;</span><span class="p">);</span>
+<span class="n">end</span>  <span class="o">=</span> <span class="n">prompt</span><span class="p">(</span><span class="s">&quot;Last port to scan ? &quot;</span><span class="p">);</span>
+
+<span class="k">for</span><span class="p">(</span><span class="n">i</span><span class="o">=</span><span class="n">start</span><span class="p">;</span><span class="n">i</span><span class="o">&lt;</span><span class="n">end</span><span class="p">;</span><span class="n">i</span><span class="o">=</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+<span class="p">{</span>
+        <span class="n">soc</span> <span class="o">=</span> <span class="n">open_sock_tcp</span><span class="p">(</span><span class="n">i</span><span class="p">);</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">soc</span><span class="p">)</span>
+        <span class="p">{</span>
+                <span class="n">display</span><span class="p">(</span><span class="s">&quot;Port &quot;</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="s">&quot; is open</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span>
+                <span class="n">close</span><span class="p">(</span><span class="n">soc</span><span class="p">);</span>
+        <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="id3">
+<h3>关闭一个套接字<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+<p>close()函数用于关闭一个socket。在内部会在关闭socket之前调用shutdown()函数。</p>
+</div>
+<div class="section" id="id4">
+<h3>读写套接字<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
+<p>读写socket使用了以下的函数:</p>
+<blockquote>
+<div><ul>
+<li><dl class="first docutils">
+<dt>recv(socket:&lt;socketname&gt;, length:&lt;length&gt; [,timeout <span class="classifier-delimiter">:</span> <span class="classifier">&lt;timeout&gt;])</span></dt>
+<dd><p class="first last">从socketname的socket读取length长度的字节数。可用于TCP和UDP。可选参数timeout的单位是秒。</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>recv_line(socket:&lt;socketname&gt;, length:&lt;length&gt; [, timeout: &lt;timeout&gt;])</dt>
+<dd><p class="first last">这个函数同recv()类似，不同点在recv_line在读到n字符时会停止读取。仅在TCP有效。</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>send(socket:&lt;socket&gt;, data:&lt;data&gt; [, length:&lt;length&gt;])</dt>
+<dd><p class="first last">在socket上发送data。可选参数length控制函数发送数据的字节数。如果没有设置length，发送操作会在遇到NULL字符时停止。</p>
+</dd>
+</dl>
+</li>
+</ul>
+</div></blockquote>
+<p>这些函数用于从一个socket读取数据，他们有一个内部的超时时长，5秒。如果到达超时市场，将会返回FALSE。</p>
+<p>例子:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># This Example displays the FTP banner of the remote host :</span>
+
+<span class="n">soc</span> <span class="o">=</span> <span class="n">open_sock_tcp</span><span class="p">(</span><span class="mi">21</span><span class="p">);</span>
+<span class="k">if</span><span class="p">(</span><span class="n">soc</span><span class="p">)</span>
+<span class="p">{</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">recv_line</span><span class="p">(</span><span class="n">socket</span><span class="p">:</span><span class="n">soc</span><span class="p">,</span> <span class="n">length</span><span class="p">:</span><span class="mi">1024</span><span class="p">);</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="p">{</span>
+                <span class="n">display</span><span class="p">(</span><span class="s">&quot;The remote FTP banner is : </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span>
+        <span class="p">}</span>
+        <span class="k">else</span>
+        <span class="p">{</span>
+                <span class="n">display</span><span class="p">(</span><span class="s">&quot;The remote FTP server seems to be tcp-wrapped</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span>
+        <span class="p">}</span>
+        <span class="n">close</span><span class="p">(</span><span class="n">soc</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="id5">
+<h3>高层函数<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>NASL有一些针对FTP和WWW的高层函数。</dt>
+<dd><ul class="first">
+<li><dl class="first docutils">
+<dt>ftp_log_in(socket:&lt;soc&gt;, user:&lt;login&gt;, pass:&lt;pass&gt;)</dt>
+<dd><p class="first last">将尝试通过socket&lt;soc&gt;登录FTP服务器。如果用户名密码正确返回TRUE，否则返回FALSE。</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>ftp_get_pasv_port(socket:&lt;soc&gt;)</dt>
+<dd><p class="first last">像远程主机发送PASV命令获取连接端口。允许NASL脚本通过FTP下载数据。如果发生错误返回FALSE。</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>is_cgi_installed(&lt;name&gt;)</dt>
+<dd><p class="first last">如果远程主机安装了cgi&lt;name&gt;则返回TRUE。这个函数将发送一个GET请求给远程主机。如果不是以/开头，则认为/cgi-bin/目录被加在前面。这个函数也用于确认某个文件是否存在。</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p class="last">例子:</p>
+</dd>
+</dl>
+<div class="highlight-python"><pre>#
+# WWW
+#
+if(is_cgi_installed("/robots.txt"))
+{
+        display("The file /robots.txt is present\n");
+}
+if(is_cgi_installed("php.cgi"))
+{
+        display("The CGI php.cgi is installed in /cgi-bin\n");
+}
+if(!is_cgi_installed("/php.cgi"))
+{
+        display("There is no 'php.cgi' in the remote web root\n");
+}</pre>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="c">#</span>
+<span class="c"># FTP</span>
+<span class="c">#</span>
+<span class="c"># open a connection to the remote host</span>
+<span class="n">soc</span> <span class="o">=</span> <span class="n">open_sock_tcp</span><span class="p">(</span><span class="mi">21</span><span class="p">);</span>
+
+<span class="c"># Log in as the anonymous user</span>
+<span class="k">if</span><span class="p">(</span><span class="n">ftp_log_in</span><span class="p">(</span><span class="n">socket</span><span class="p">:</span><span class="n">soc</span><span class="p">,</span> <span class="n">user</span><span class="p">:</span><span class="s">&quot;ftp&quot;</span><span class="p">,</span> <span class="k">pass</span><span class="p">:</span><span class="s">&quot;joe@&quot;</span><span class="p">))</span>
+<span class="p">{</span>
+        <span class="c"># Get a passive port</span>
+        <span class="n">port</span> <span class="o">=</span> <span class="n">ftp_get_pasv_port</span><span class="p">(</span><span class="n">socket</span><span class="p">:</span><span class="n">soc</span><span class="p">);</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">port</span><span class="p">)</span>
+        <span class="p">{</span>
+                <span class="n">soc2</span> <span class="o">=</span> <span class="n">open_sock_tcp</span><span class="p">(</span><span class="n">port</span><span class="p">);</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="n">string</span><span class="p">(</span><span class="s">&quot;RETR /etc/passwd</span><span class="se">\r\n</span><span class="s">&quot;</span><span class="p">);</span>
+                <span class="n">send</span><span class="p">(</span><span class="n">socket</span><span class="p">:</span><span class="n">soc</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span><span class="n">data</span><span class="p">);</span>
+                <span class="n">password_file</span> <span class="o">=</span> <span class="n">recv</span><span class="p">(</span><span class="n">socket</span><span class="p">:</span><span class="n">soc2</span><span class="p">,</span> <span class="n">length</span><span class="p">:</span><span class="mi">10000</span><span class="p">);</span>
+                <span class="n">display</span><span class="p">(</span><span class="n">password_file</span><span class="p">);</span>
+                <span class="n">close</span><span class="p">(</span><span class="n">soc2</span><span class="p">);</span>
+        <span class="p">}</span>
+        <span class="n">close</span><span class="p">(</span><span class="n">soc</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="id6">
+<h2>原始报文处理<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h2>
+<p>NASL允许你构造自己的IP报文，而且报文的构造是以一种智能的方式。比如，你改变了TCP报文的参数，TCP报文的校验和会被自动计算。如果你在IP报文上又加了一层，则ip_len会被自动更新，除非你说，不要这样~~~</p>
+<p>所有的报文函数都是用命名参数。参数命名都来自BSD包含文件。所有，一个IP报文的长度参数会被命名为ip_len而不是length。</p>
+<div class="section" id="ip">
+<h3>构造IP报文<a class="headerlink" href="#ip" title="Permalink to this headline">¶</a></h3>
+<p>forge_ip_packet()用于构造一个新的IP报文。get_ip_element()函数用于返回一个报文的一个参数，set_ip_elements()用于设置一个已经存在的IP报文的参数。</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="o">&lt;</span><span class="n">return_value</span><span class="o">&gt;</span> <span class="o">=</span> <span class="n">forge_ip_packet</span><span class="p">(</span>
+        <span class="n">ip_hl</span>    <span class="p">:</span> <span class="o">&lt;</span><span class="n">ip_hl</span><span class="o">&gt;</span><span class="p">,</span>
+        <span class="n">ip_v</span>     <span class="p">:</span> <span class="o">&lt;</span><span class="n">ip_v</span><span class="o">&gt;</span><span class="p">,</span>
+        <span class="n">ip_tos</span>   <span class="p">:</span> <span class="o">&lt;</span><span class="n">ip_tos</span><span class="o">&gt;</span><span class="p">,</span>
+        <span class="n">ip_len</span>   <span class="p">:</span> <span class="o">&lt;</span><span class="n">ip_len</span><span class="o">&gt;</span><span class="p">,</span>
+        <span class="n">ip_id</span>    <span class="p">:</span> <span class="o">&lt;</span><span class="n">ip_id</span><span class="o">&gt;</span><span class="p">,</span>
+        <span class="n">ip_off</span>   <span class="p">:</span> <span class="o">&lt;</span><span class="n">ip_off</span><span class="o">&gt;</span><span class="p">,</span>
+        <span class="n">ip_ttl</span>   <span class="p">:</span> <span class="o">&lt;</span><span class="n">ip_ttl</span><span class="o">&gt;</span><span class="p">,</span>
+        <span class="n">ip_p</span>     <span class="p">:</span> <span class="o">&lt;</span><span class="n">ip_p</span><span class="o">&gt;</span><span class="p">,</span>
+        <span class="n">ip_src</span>   <span class="p">:</span> <span class="o">&lt;</span><span class="n">ip_src</span><span class="o">&gt;</span><span class="p">,</span>
+        <span class="n">ip_dst</span>   <span class="p">:</span> <span class="o">&lt;</span><span class="n">ip_dst</span><span class="o">&gt;</span><span class="p">,</span>
+        <span class="p">[</span><span class="n">ip_sum</span>  <span class="p">:</span> <span class="o">&lt;</span><span class="n">ip_sum</span><span class="o">&gt;</span><span class="p">]</span> <span class="p">);</span>
+</pre></div>
+</div>
+<p>ip_sum参数是可选的，如果未被设置，将会自动计算。ip_p参数是一个整型，或者是IPPROTO_TCP, IPPROTO_UDP, IPPROTO_ICMP, IPPROTO_IGMP or IPPROTO_IP其中之一。</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="o">&lt;</span><span class="n">element</span><span class="o">&gt;</span> <span class="o">=</span> <span class="n">get_ip_element</span><span class="p">(</span>
+        <span class="n">ip</span>      <span class="p">:</span> <span class="o">&lt;</span><span class="n">ip_variable</span><span class="o">&gt;</span><span class="p">,</span>
+        <span class="n">element</span> <span class="p">:</span> <span class="s">&quot;ip_hl&quot;</span><span class="o">|</span><span class="s">&quot;ip_v&quot;</span><span class="o">|</span><span class="s">&quot;ip_tos&quot;</span><span class="o">|</span><span class="s">&quot;ip_len&quot;</span><span class="o">|</span>
+                  <span class="s">&quot;ip_id&quot;</span><span class="o">|</span><span class="s">&quot;ip_off&quot;</span><span class="o">|</span><span class="s">&quot;ip_ttl&quot;</span><span class="o">|</span><span class="s">&quot;ip_p&quot;</span><span class="o">|</span>
+                  <span class="s">&quot;ip_sum&quot;</span><span class="o">|</span><span class="s">&quot;ip_src&quot;</span><span class="o">|</span><span class="s">&quot;ip_dst&quot;</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>get_ip_element()函数用于返回一个报文的一个参数。这个参数必须是&#8221;ip_hl&#8221;, &#8220;ip_v&#8221;, &#8220;ip_tos&#8221;, &#8220;ip_len&#8221;, &#8220;ip_id&#8221;, &#8220;ip_off&#8221;, &#8220;ip_ttl&#8221;, &#8220;ip_p&#8221;, &#8220;ip_sum&#8221;, &#8220;ip_src&#8221; 或者 &#8220;ip_dst&#8221;其中之一。注意，引号是必不可少的。</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">set_ip_elements</span><span class="p">(</span> <span class="n">ip</span>     <span class="p">:</span> <span class="o">&lt;</span><span class="n">ip_variable</span><span class="o">&gt;</span><span class="p">,</span>
+          <span class="p">[</span><span class="n">ip_hl</span>    <span class="p">:</span> <span class="o">&lt;</span><span class="n">ip_hl</span><span class="o">&gt;</span><span class="p">,</span> <span class="p">]</span>
+          <span class="p">[</span><span class="n">ip_v</span>     <span class="p">:</span> <span class="o">&lt;</span><span class="n">ip_v</span><span class="o">&gt;</span><span class="p">,</span>  <span class="p">]</span>
+          <span class="p">[</span><span class="n">ip_tos</span>   <span class="p">:</span> <span class="o">&lt;</span><span class="n">ip_tos</span><span class="o">&gt;</span><span class="p">,]</span>
+          <span class="p">[</span><span class="n">ip_len</span>   <span class="p">:</span> <span class="o">&lt;</span><span class="n">ip_len</span><span class="o">&gt;</span><span class="p">,]</span>
+          <span class="p">[</span><span class="n">ip_id</span>    <span class="p">:</span> <span class="o">&lt;</span><span class="n">ip_id</span><span class="o">&gt;</span><span class="p">,</span> <span class="p">]</span>
+          <span class="p">[</span><span class="n">ip_off</span>   <span class="p">:</span> <span class="o">&lt;</span><span class="n">ip_off</span><span class="o">&gt;</span><span class="p">,]</span>
+          <span class="p">[</span><span class="n">ip_ttl</span>   <span class="p">:</span> <span class="o">&lt;</span><span class="n">ip_ttl</span><span class="o">&gt;</span><span class="p">,]</span>
+          <span class="p">[</span><span class="n">ip_p</span>     <span class="p">:</span> <span class="o">&lt;</span><span class="n">ip_p</span><span class="o">&gt;</span><span class="p">,</span>  <span class="p">]</span>
+          <span class="p">[</span><span class="n">ip_src</span>   <span class="p">:</span> <span class="o">&lt;</span><span class="n">ip_src</span><span class="o">&gt;</span><span class="p">,]</span>
+          <span class="p">[</span><span class="n">ip_dst</span>   <span class="p">:</span> <span class="o">&lt;</span><span class="n">ip_dst</span><span class="o">&gt;</span><span class="p">,]</span>
+          <span class="p">[</span><span class="n">ip_sum</span>  <span class="p">:</span> <span class="o">&lt;</span><span class="n">ip_sum</span><span class="o">&gt;</span>  <span class="p">]</span>
+        <span class="p">);</span>
+</pre></div>
+</div>
+<p>set_ip_elements()用于设置一个已经存在的IP报文的参数，如果没有修改ip_sum的值，它会自动计算。
+这个函数没有构造报文的能力，所以还需要在这之前调用forge_ip_packet()。</p>
+<p>最后，dump_ip_packet(&lt;packet&gt;)函数用于打印出可读的报文信息。你应该只在调试的时候使用它。</p>
+</div>
+<div class="section" id="tcp">
+<h3>构造TCP报文<a class="headerlink" href="#tcp" title="Permalink to this headline">¶</a></h3>
+<p>forge_tcp_packet()用于构造TCP报文。语法如下：</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">tcppacket</span> <span class="o">=</span> <span class="n">forge_tcp_packet</span><span class="p">(</span><span class="n">ip</span> <span class="p">:</span> <span class="o">&lt;</span><span class="n">ip_packet</span><span class="o">&gt;</span><span class="p">,</span>
+                      <span class="n">th_sport</span> <span class="p">:</span> <span class="o">&lt;</span><span class="n">source_port</span><span class="o">&gt;</span><span class="p">,</span>
+                      <span class="n">th_dport</span> <span class="p">:</span> <span class="o">&lt;</span><span class="n">destination_port</span><span class="o">&gt;</span><span class="p">,</span>
+                      <span class="n">th_flags</span> <span class="p">:</span> <span class="o">&lt;</span><span class="n">tcp_flags</span><span class="o">&gt;</span><span class="p">,</span>
+                      <span class="n">th_seq</span>   <span class="p">:</span> <span class="o">&lt;</span><span class="n">sequence_number</span><span class="o">&gt;</span><span class="p">,</span>
+                      <span class="n">th_ack</span>   <span class="p">:</span> <span class="o">&lt;</span><span class="n">acknowledgement_number</span><span class="o">&gt;</span><span class="p">,</span>
+                      <span class="p">[</span><span class="n">th_x2</span>   <span class="p">:</span> <span class="o">&lt;</span><span class="n">unused</span><span class="o">&gt;</span><span class="p">],</span>
+                      <span class="n">th_off</span>   <span class="p">:</span> <span class="o">&lt;</span><span class="n">offset</span><span class="o">&gt;</span><span class="p">,</span>
+                      <span class="n">th_win</span>   <span class="p">:</span> <span class="o">&lt;</span><span class="n">window</span><span class="o">&gt;</span><span class="p">,</span>
+                      <span class="n">th_urp</span>   <span class="p">:</span> <span class="o">&lt;</span><span class="n">urgent_pointer</span><span class="o">&gt;</span><span class="p">,</span>
+                      <span class="p">[</span><span class="n">th_sum</span>  <span class="p">:</span> <span class="o">&lt;</span><span class="n">checkum</span><span class="o">&gt;</span><span class="p">],</span>
+                      <span class="p">[</span><span class="n">data</span>    <span class="p">:</span> <span class="o">&lt;</span><span class="n">data</span><span class="o">&gt;</span><span class="p">]);</span>
+</pre></div>
+</div>
+<p>可选参数th_flags必须为TH_SYN, TH_ACK, TH_FIN, TH_PUSH 或者 TH_RST其中之一，可以使用|符连接。
+th_flags也可以是一个整数值。ip_packet必须由forge_ip_packet()函数生成，或者必须是使用send_packet()或pcap_next()函数读取的值。</p>
+<p>set_tcp_elements()函数用于修改TCP包的参数值。语法类似forge_tcp_packet():</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">set_tcp_elements</span><span class="p">(</span><span class="n">tcp</span> <span class="p">:</span> <span class="o">&lt;</span><span class="n">tcp_packet</span><span class="o">&gt;</span><span class="p">,</span>
+                      <span class="p">[</span><span class="n">th_sport</span> <span class="p">:</span> <span class="o">&lt;</span><span class="n">source_port</span><span class="o">&gt;</span><span class="p">,]</span>
+                      <span class="p">[</span><span class="n">th_dport</span> <span class="p">:</span> <span class="o">&lt;</span><span class="n">destination_port</span><span class="o">&gt;</span><span class="p">,]</span>
+                      <span class="p">[</span><span class="n">th_flags</span> <span class="p">:</span> <span class="o">&lt;</span><span class="n">tcp_flags</span><span class="o">&gt;</span><span class="p">,]</span>
+                      <span class="p">[</span><span class="n">th_seq</span>   <span class="p">:</span> <span class="o">&lt;</span><span class="n">sequence_number</span><span class="o">&gt;</span><span class="p">,]</span>
+                      <span class="p">[</span><span class="n">th_ack</span>   <span class="p">:</span> <span class="o">&lt;</span><span class="n">acknowledgement_number</span><span class="o">&gt;</span><span class="p">,]</span>
+                      <span class="p">[</span><span class="n">th_x2</span>    <span class="p">:</span> <span class="o">&lt;</span><span class="n">unused</span><span class="o">&gt;</span><span class="p">,]</span>
+                      <span class="p">[</span><span class="n">th_off</span>   <span class="p">:</span> <span class="o">&lt;</span><span class="n">offset</span><span class="o">&gt;</span><span class="p">,]</span>
+                      <span class="p">[</span><span class="n">th_win</span>   <span class="p">:</span> <span class="o">&lt;</span><span class="n">window</span><span class="o">&gt;</span><span class="p">,]</span>
+                      <span class="p">[</span><span class="n">th_urp</span>   <span class="p">:</span> <span class="o">&lt;</span><span class="n">urgent_pointer</span><span class="o">&gt;</span><span class="p">,]</span>
+                      <span class="p">[</span><span class="n">th_sum</span>   <span class="p">:</span> <span class="o">&lt;</span><span class="n">checkum</span><span class="o">&gt;</span><span class="p">],</span>
+                      <span class="p">[</span><span class="n">data</span>     <span class="p">:</span> <span class="o">&lt;</span><span class="n">data</span><span class="o">&gt;</span><span class="p">]</span> <span class="p">);</span>
+</pre></div>
+</div>
+<p>这个函数会自动生成TCP校验和，除非你已经指定了th_sum的值。</p>
+<p>get_tcp_element()函数用于获取TCP报文中的参数值。语法如下：</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">element</span> <span class="o">=</span> <span class="n">get_tcp_elements</span><span class="p">(</span><span class="n">tcp</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">tcp_packet</span><span class="o">&gt;</span><span class="p">,</span>
+          <span class="n">element</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">element_name</span><span class="o">&gt;</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>element_name必须是&#8221;tcp_sport&#8221;, &#8220;&#8221;th_dport&#8221;, &#8220;th_flags&#8221;, &#8220;th_seq&#8221;, &#8220;th_ack&#8221;, &#8220;th_x2&#8221;, &#8220;th_off&#8221;, &#8220;th_win&#8221;, &#8220;th_urp&#8221;, &#8220;th_sum&#8221;其中之一，注意引号必须有。</p>
+</div>
+<div class="section" id="udp">
+<h3>构造UDP报文<a class="headerlink" href="#udp" title="Permalink to this headline">¶</a></h3>
+<p>UDP函数的使用类似TCP函数</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">udp</span> <span class="o">=</span> <span class="n">forge_udp_packet</span><span class="p">(</span><span class="n">ip</span><span class="p">:</span><span class="o">&lt;</span><span class="n">ip_packet</span><span class="o">&gt;</span><span class="p">,</span>
+                <span class="n">uh_sport</span> <span class="p">:</span> <span class="o">&lt;</span><span class="n">source_port</span><span class="o">&gt;</span><span class="p">,</span>
+                <span class="n">uh_dport</span> <span class="p">:</span> <span class="o">&lt;</span><span class="n">destination_port</span><span class="o">&gt;</span><span class="p">,</span>
+                <span class="n">uh_ulen</span>  <span class="p">:</span> <span class="o">&lt;</span><span class="n">length</span><span class="o">&gt;</span><span class="p">,</span>
+                <span class="p">[</span><span class="n">uh_sum</span>  <span class="p">:</span> <span class="o">&lt;</span><span class="n">checksum</span><span class="o">&gt;</span><span class="p">],</span>
+                <span class="p">[</span><span class="n">data</span>    <span class="p">:</span> <span class="o">&lt;</span><span class="n">data</span><span class="o">&gt;</span><span class="p">]);</span>
+</pre></div>
+</div>
+<p>set_udp_elements()和get_udp_elements()函数通TCP类似。</p>
+</div>
+<div class="section" id="icmp">
+<h3>构造ICMP报文<a class="headerlink" href="#icmp" title="Permalink to this headline">¶</a></h3>
+<p>暂缺(原文未写)</p>
+</div>
+<div class="section" id="igmp">
+<h3>构造IGMP报文<a class="headerlink" href="#igmp" title="Permalink to this headline">¶</a></h3>
+<p>暂缺(原文未写)</p>
+</div>
+<div class="section" id="id7">
+<h3>发送报文<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h3>
+<p>当你通过forge_*_packet()函数构造好报文后，就可以通过send_packet()函数来发送它。</p>
+<p>语法如下:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">reply</span> <span class="o">=</span> <span class="n">send_packet</span><span class="p">(</span><span class="n">packet1</span><span class="p">,</span> <span class="n">packet2</span><span class="p">,</span> <span class="o">....</span><span class="p">,</span> <span class="n">packetN</span><span class="p">,</span>
+             <span class="n">pcap_active</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">TRUE</span><span class="o">|</span><span class="n">FALSE</span><span class="o">&gt;</span><span class="p">,</span>
+             <span class="n">pcap_filter</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">pcap_filter</span><span class="o">&gt;</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>如果pcap_active被设置为TRUE(默认值)，这个函数会等待远程主机回复。你可以设置pcap_filter参数去选择你需要哪种类型的报文。查找 <a class="reference external" href="http://www.tcpdump.org/pcap3_man.html">pcap</a> (或者 <a class="reference external" href="http://www.tcpdump.org/tcpdump_man.html">tcpdump</a> )来学习如何填写pcap_filter参数。</p>
+</div>
+<div class="section" id="id8">
+<h3>读取报文<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h3>
+<p>pcap_next()函数用于读取报文。语法如下:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">reply</span> <span class="o">=</span> <span class="n">pcap_next</span><span class="p">();</span>
+</pre></div>
+</div>
+<p>这个函数会从你最近使用的接口中读取报文，报文类型取决于你最后设置的pcap_filter类型。</p>
+</div>
+</div>
+<div class="section" id="id9">
+<h2>工具函数<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>NASL提供了工具函数来简化编程。</dt>
+<dd><ul class="first last">
+<li><p class="first">this_host() 无需参数，返回运行脚本主机的IP地址。</p>
+</li>
+<li><p class="first">get_host_name() 无需参数，返回目的主机的主机名。</p>
+</li>
+<li><p class="first">get_host_ip() 无需参数，返回目的主机的IP地址。</p>
+</li>
+<li><dl class="first docutils">
+<dt>get_host_open_port() 无需参数，返回远程主机打开的第一个端口号。对于某些脚本来说很实用，比如</dt>
+<dd><p class="first last">land或者TCP序列分析程序。</p>
+</dd>
+</dl>
+</li>
+<li><p class="first">get_port_state(&lt;portnum&gt;) 如果端口portnum打开或者未知(比如端口未被扫描到，或者不在扫描范围之内), 返回TRUE，</p>
+</li>
+<li><dl class="first docutils">
+<dt>telnet_init(&lt;soc&gt;) 在socket&lt;soc&gt;上初始一个telnet会话，并返回数据的第一行。</dt>
+<dd><p class="first">例如:</p>
+<div class="last highlight-python"><div class="highlight"><pre><span class="n">soc</span> <span class="o">=</span> <span class="n">open_sock_tcp</span><span class="p">(</span><span class="mi">23</span><span class="p">);</span>
+<span class="nb">buffer</span> <span class="o">=</span> <span class="n">telnet_init</span><span class="p">(</span><span class="n">soc</span><span class="p">);</span>
+<span class="n">display</span><span class="p">(</span><span class="s">&quot;The remote telnet banner is : &quot;</span><span class="p">,</span> <span class="nb">buffer</span><span class="p">,</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</li>
+<li><p class="first">tcp_ping() 无需参数，如果远程主机响应了TCP ping(发送一个设置了ACK标记的TCP包)请求，则返回TRUE。</p>
+</li>
+<li><p class="first">getrpcport() 返回rpc端口号。语法如下；</p>
+<blockquote>
+<div><div class="highlight-python"><div class="highlight"><pre><span class="n">result</span> <span class="o">=</span> <span class="n">getrpcport</span><span class="p">(</span><span class="n">program</span> <span class="p">:</span> <span class="o">&lt;</span><span class="n">program_number</span><span class="o">&gt;</span><span class="p">,</span>
+     <span class="n">protocol</span><span class="p">:</span> <span class="n">IPPROTO_TCP</span><span class="o">|</span><span class="n">IPPROTO_UDP</span><span class="p">,</span>
+     <span class="p">[</span><span class="n">version</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">version</span><span class="o">&gt;</span><span class="p">]);</span>
+</pre></div>
+</div>
+<p>如果出错则返回0(如果&lt;program_number&gt;没有在远程主机RPC端口映射表中注册)。</p>
+</div></blockquote>
+</li>
+</ul>
+</dd>
+</dl>
+</div>
+</div>
+
+
+
+            <div class="section" id="discuss">
+    <h2>
+        讨论
+        <a class="headerlink" href="#discuss" title="永久链接至标题">¶</a>
+    </h2>
+    <div id="disqus_thread"></div>
+    <script type="text/javascript">
+        /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+        var disqus_shortname = 'YOUR-DISQUS-FORUM-SHORTNAME'; // required: replace example with your forum shortname
+
+        /* * * DON'T EDIT BELOW THIS LINE * * */
+        (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../string/string.html" title="简介"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../basics/basics.html" title="基础：NASL语法"
+             >previous</a> |</li>
+        <li><a href="../index.html">Nessus NASL脚本参考手册 1.0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Xiaxiaoyu.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.2b3.
+    </div>
+  </body>
+</html>

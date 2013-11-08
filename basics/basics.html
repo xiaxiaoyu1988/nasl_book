@@ -1,0 +1,309 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>基础：NASL语法 &mdash; Nessus NASL脚本参考手册 1.0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/pyramid.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="Nessus NASL脚本参考手册 1.0.1 documentation" href="../index.html" />
+    <link rel="next" title="NASL网络相关函数" href="../network/network.html" />
+    <link rel="prev" title="简介" href="../introduction/introduction.html" /> 
+
+<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Neuton&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
+<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Nobile:regular,italic,bold,bolditalic&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
+<!--[if lte IE 6]>
+<link rel="stylesheet" href="../_static/ie6.css" type="text/css" media="screen" charset="utf-8" />
+<![endif]-->
+
+
+  </head>
+  <body>
+
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../network/network.html" title="NASL网络相关函数"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../introduction/introduction.html" title="简介"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Nessus NASL脚本参考手册 1.0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="nasl">
+<h1>基础：NASL语法<a class="headerlink" href="#nasl" title="Permalink to this headline">¶</a></h1>
+<p>NASL的语法同C非常类似，除了移除掉一些C中令人困扰的东西。你不用关心你的变量的类型，也不用关心内存的申请和释放。在使用变量之前也不需要声明。你只需要专注于你的安全测试。</p>
+<p>如果你不知道C，那么此篇为C程序员写的教程阅读起来可能会比较困难。不要抱怨，这本手册将来更具可读性。</p>
+<div class="toctree-wrapper compound">
+<ul class="simple">
+</ul>
+</div>
+<div class="section" id="id1">
+<h2>注释<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<p>注释字符是“#”。它仅能注释当前行。
+例子：</p>
+<p>合法的注释：</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="c">#let a = 1</span>
+<span class="c">#Set b to 2:</span>
+<span class="n">b</span> <span class="o">=</span> <span class="mi">2</span><span class="p">;</span>
+</pre></div>
+</div>
+<p>非法的注释：</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c">#</span>
+   <span class="nb">set</span> <span class="n">a</span> <span class="n">to</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="c">#</span>
+<span class="n">a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="c"># set a to 1 #1;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="include">
+<h2>变量，类型，内存分配，包含(include)<a class="headerlink" href="#include" title="Permalink to this headline">¶</a></h2>
+<p>你不要在使用变量之前声明它， 也不需要关心变量类型。NASL解释器在你尝试写一些不符合语法的代码时提示你， 比如把一个IP报文和一个整数相加。你也不需要关心内存分配和包含。NASL中没有包含(从目前最新的nasl脚本来看，还是有包含的:( )，而且内存在需要时会自动分配。</p>
+</div>
+<div class="section" id="id2">
+<h2>数字和字符串<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
+<p>可以使用三种数制类型：十进制，十六进制，以及二进制。</p>
+<p>例如：</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">a</span> <span class="o">=</span> <span class="mi">1024</span><span class="p">;</span>
+<span class="n">b</span> <span class="o">=</span> <span class="mh">0x0A</span><span class="p">;</span>
+<span class="n">c</span> <span class="o">=</span> <span class="mi">0</span><span class="n">b001010110110</span><span class="p">;</span>
+<span class="n">d</span> <span class="o">=</span> <span class="mi">123</span> <span class="o">+</span> <span class="mh">0xFF</span><span class="p">;</span>
+</pre></div>
+</div>
+<p>字符串必须用引号括起来。和C不一样。NASL不会去解析特殊字符，除非使用string()函数。</p>
+<p>例如：</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">a</span> <span class="o">=</span> <span class="s">&quot;Hello</span><span class="se">\n</span><span class="s">I&#39;m Renaud&quot;</span><span class="p">;</span>           <span class="c"># a equals to &quot;Hello\nI&#39;m Renaud&quot;</span>
+<span class="n">b</span> <span class="o">=</span>  <span class="n">string</span><span class="p">(</span><span class="s">&quot;Hello</span><span class="se">\n</span><span class="s">I&#39;m Renaud&quot;</span><span class="p">);</span>  <span class="c"># b equals to &quot;Hello</span>
+                               <span class="c">#              I&#39;m renaud&quot;</span>
+
+<span class="n">c</span> <span class="o">=</span> <span class="n">string</span><span class="p">(</span><span class="n">a</span><span class="p">);</span>                     <span class="c"># c equals to b</span>
+</pre></div>
+</div>
+<p>string()函数将在 <a class="reference internal" href="../string/string.html#string"><em>字符串操作</em></a> 中解释。</p>
+</div>
+<div class="section" id="id3">
+<h2>命名和匿名参数<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id4">
+<h3>命名函数<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
+<p>在处理函数参数上，NASL同C有一个不一样的地方。在C中， 你必须知道每一个参数的位置和顺序。当一个函数的参数多达10个以上的时候，你就头疼了。例如，一个组装IP报文的函数，需要茫茫多的参数，如果你要使用它，就需要通过阅读文档来记住参数们的位置和顺序。这太浪费时间了，所以NASL尝试避免这种情况。</p>
+<p>所以，当函数参数有不同的类型，且参数顺序很重要的时候， 就要定义一个命名函数了。你必须给每一个参数命名。当你忘记其中一些参数时，在运行时，NASL会给出一些提示。</p>
+<p>例如：</p>
+<p>forge_ip_packet()函数有很挫的参数。下面这两个调用方式都是对的，且功能是一样的：</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">forge_ip_packet</span><span class="p">(</span><span class="n">ip_hl</span> <span class="p">:</span> <span class="mi">5</span><span class="p">,</span> <span class="n">ip_v</span> <span class="p">:</span> <span class="mi">4</span><span class="p">,</span>
+                <span class="n">ip_p</span> <span class="p">:</span> <span class="n">IPPROTO_TCP</span><span class="p">);</span>
+
+<span class="n">forge_ip_packet</span><span class="p">(</span><span class="n">ip_p</span> <span class="p">:</span> <span class="n">IPPROTO_TCP</span><span class="p">,</span>
+                <span class="n">ip_v</span> <span class="p">:</span> <span class="mi">4</span><span class="p">,</span> <span class="n">ip_hl</span> <span class="p">:</span> <span class="mi">5</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>在运行时，用户会被提示缺少参数(ip_len等等)。当然安全测试脚本不能和用户交互，但是方便快速编码和调试。</p>
+</div>
+<div class="section" id="id5">
+<h3>匿名函数<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>
+<p>匿名函数是只有一个参数或者多个相同类型的参数的函数。</p>
+<p>例如：</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">send_packet</span><span class="p">(</span><span class="n">my_packet</span><span class="p">);</span>
+<span class="n">send_packet</span><span class="p">(</span><span class="n">packet1</span><span class="p">,</span> <span class="n">packet2</span><span class="p">,</span> <span class="n">packet3</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>这些函数可能会有一些可选项。比如，send_packet()函数在等待目标的响应。如果你觉得没必要等待，可以停用等待加快测试速度:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">send_packet</span><span class="p">(</span><span class="n">packet</span><span class="p">,</span> <span class="n">use_pcap</span><span class="p">:</span><span class="n">FALSE</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="forwhile">
+<h2>For和While<a class="headerlink" href="#forwhile" title="Permalink to this headline">¶</a></h2>
+<p>for和while跟c中类似。</p>
+<p>for:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">for</span><span class="p">(</span><span class="n">instruction_start</span><span class="p">;</span><span class="n">condition</span><span class="p">;</span><span class="n">end_loop_instruction</span><span class="p">)</span>
+<span class="p">{</span>
+        <span class="c">#</span>
+        <span class="c"># Some instructions here</span>
+        <span class="c">#</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>或者</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">for</span><span class="p">(</span><span class="n">instruction_start</span><span class="p">;</span><span class="n">condition</span><span class="p">;</span><span class="n">end_loop_instruction</span><span class="p">)</span><span class="n">function</span><span class="p">();</span>
+</pre></div>
+</div>
+<p>while:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">while</span><span class="p">(</span><span class="n">condition</span><span class="p">)</span>
+<span class="p">{</span>
+        <span class="c">#</span>
+        <span class="c"># Some instructions here</span>
+        <span class="c">#</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>或者</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">while</span><span class="p">(</span><span class="n">condition</span><span class="p">)</span><span class="n">function</span><span class="p">();</span>
+</pre></div>
+</div>
+<p>例子:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># Count from 1 to 10</span>
+<span class="k">for</span><span class="p">(</span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">;</span><span class="n">i</span><span class="o">&lt;=</span><span class="mi">10</span><span class="p">;</span><span class="n">i</span><span class="o">=</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">display</span><span class="p">(</span><span class="s">&quot;i : &quot;</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span>
+
+<span class="c"># Count from 1 to 9, and say the type</span>
+<span class="c"># of each number (even or odd)</span>
+<span class="k">for</span><span class="p">(</span><span class="n">j</span><span class="o">=</span><span class="mi">1</span><span class="p">;</span><span class="n">j</span><span class="o">&lt;</span><span class="mi">10</span><span class="p">;</span><span class="n">j</span><span class="o">=</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+<span class="p">{</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">j</span> <span class="o">&amp;</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="n">display</span><span class="p">(</span><span class="n">j</span><span class="p">,</span> <span class="s">&quot; is odd</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span>
+        <span class="k">else</span>
+                <span class="n">display</span><span class="p">(</span><span class="n">j</span><span class="p">,</span> <span class="s">&quot; is even</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="c"># Do something completely useless :</span>
+
+<span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+<span class="k">while</span><span class="p">(</span><span class="n">i</span> <span class="o">&lt;</span> <span class="mi">10</span><span class="p">)</span>
+<span class="p">{</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="id6">
+<h2>自定义函数<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h2>
+<p>NASL现在已经支持自定义函数。一个自定义函数可以像这样定义：</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">function</span> <span class="n">my_function</span><span class="p">(</span><span class="n">argument1</span><span class="p">,</span> <span class="n">argument2</span><span class="p">,</span> <span class="o">....</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>自定义函数必须使用命名参数。NASL可以处理递归调用。</p>
+<p>例如：</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">function</span> <span class="n">fact</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+<span class="p">{</span>
+        <span class="k">if</span><span class="p">((</span><span class="n">n</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span><span class="o">||</span><span class="p">(</span><span class="n">n</span> <span class="o">==</span> <span class="mi">1</span><span class="p">))</span>
+                <span class="k">return</span><span class="p">(</span><span class="n">n</span><span class="p">);</span>
+        <span class="k">else</span>
+                <span class="k">return</span><span class="p">(</span><span class="n">n</span><span class="o">*</span><span class="n">fact</span><span class="p">(</span><span class="n">n</span><span class="p">:</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">));</span>
+<span class="p">}</span>
+
+<span class="n">display</span><span class="p">(</span><span class="s">&quot;5! is &quot;</span><span class="p">,</span> <span class="n">fact</span><span class="p">(</span><span class="n">n</span><span class="p">:</span><span class="mi">5</span><span class="p">),</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>自定义函数中不能包含其他的自定义函数(实际上是可以的，但在这种情况下，NASL解释器会告警)。
+注意，如果你想要你的函数返回值(大部分函数的目的), 那么你需要使用return()函数。 因此，return必须使用括号。</p>
+<p>下面是一个错误的用法：</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">function</span> <span class="n">func</span><span class="p">()</span>
+<span class="p">{</span>
+        <span class="k">return</span> <span class="mi">1</span><span class="p">;</span> <span class="c"># parenthesis are missing here !</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="id7">
+<h2>操作符<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h2>
+<p>标准C中的一些操作符，同样可以用在NASL中，例如: +, -, *, / 以及 %。 目前操作符优先级还不支持，但是以后会更新。除此之外，还支持二进制操作符 | 和 &amp;。另外还有两个C中没有的操作符。</p>
+<div class="section" id="x">
+<h3>&#8216;x&#8217;操作符<a class="headerlink" href="#x" title="Permalink to this headline">¶</a></h3>
+<p>for和while都很实用。但在一些情况下会有性能损失，因为每次迭代中，条件都需要计算。比如你想发送一个SYN风暴或者别的，就比较麻烦了。&#8217;x&#8217;操作符可以重复相同的函数N次，而且非常快(跟C的速度差不多)。</p>
+<p>例如：</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">send_packet</span><span class="p">(</span><span class="n">udp</span><span class="p">)</span> <span class="n">x</span> <span class="mi">10</span><span class="p">;</span>
+</pre></div>
+</div>
+<p>将会发送相同的udp包10次。</p>
+</div>
+<div class="section" id="id8">
+<h3>&#8216;&gt;&lt;&#8217;操作符<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h3>
+<p>&#8216;&gt;&lt;&#8217; 是一个布尔操作符。如果A字符被包含在B字符中，则返回true。</p>
+<p>例如：</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">a</span> <span class="o">=</span> <span class="s">&quot;Nessus&quot;</span><span class="p">;</span>
+<span class="n">b</span> <span class="o">=</span> <span class="s">&quot;I use Nessus&quot;</span><span class="p">;</span>
+
+<span class="k">if</span><span class="p">(</span><span class="n">a</span> <span class="o">&gt;&lt;</span> <span class="n">b</span><span class="p">)</span>
+<span class="p">{</span>
+        <span class="c"># This will be executed since</span>
+        <span class="c"># a is in B</span>
+        <span class="n">display</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="s">&quot; is contained in &quot;</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+
+
+
+            <div class="section" id="discuss">
+    <h2>
+        讨论
+        <a class="headerlink" href="#discuss" title="永久链接至标题">¶</a>
+    </h2>
+    <div id="disqus_thread"></div>
+    <script type="text/javascript">
+        /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+        var disqus_shortname = 'YOUR-DISQUS-FORUM-SHORTNAME'; // required: replace example with your forum shortname
+
+        /* * * DON'T EDIT BELOW THIS LINE * * */
+        (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../network/network.html" title="NASL网络相关函数"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../introduction/introduction.html" title="简介"
+             >previous</a> |</li>
+        <li><a href="../index.html">Nessus NASL脚本参考手册 1.0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Xiaxiaoyu.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.2b3.
+    </div>
+  </body>
+</html>

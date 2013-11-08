@@ -1,0 +1,376 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>编写一个Nessus安全测试脚本 &mdash; Nessus NASL脚本参考手册 1.0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/pyramid.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="Nessus NASL脚本参考手册 1.0.1 documentation" href="../index.html" />
+    <link rel="next" title="小结" href="../conclusion/conclusion.html" />
+    <link rel="prev" title="字符串处理函数" href="../string/string.html" /> 
+
+<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Neuton&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
+<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Nobile:regular,italic,bold,bolditalic&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
+<!--[if lte IE 6]>
+<link rel="stylesheet" href="../_static/ie6.css" type="text/css" media="screen" charset="utf-8" />
+<![endif]-->
+
+
+  </head>
+  <body>
+
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../conclusion/conclusion.html" title="小结"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../string/string.html" title="字符串处理函数"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Nessus NASL脚本参考手册 1.0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="nessus">
+<h1>编写一个Nessus安全测试脚本<a class="headerlink" href="#nessus" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+<ul class="simple">
+</ul>
+</div>
+<div class="section" id="id1">
+<h2>如何编写一个高效的Nessus测试脚本<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<p>仅需要很短的时间，nessusd会加载所有的脚本。所以写一个好的脚本一定要用到其他脚本的测试结果。
+比如，一个脚本在尝试连接FTP服务器时，应该首先检查远程端口21是否开放。这将节省时间已经带宽，也大大加快了对于目的主机防火墙屏蔽21端口的情况。</p>
+<div class="section" id="id2">
+<h3>探测一个端口是否开放<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<p>get_port_state(&lt;portnum&gt;)函数在端口开放时返回TRUE，反之返回FALSE。如果该端口未被扫描，同样返回TRUE。这时候端口的状态是未知的。
+这个函数仅占用很少的CPU，在需要的情况下，应该尽可能的调用它。</p>
+</div>
+<div class="section" id="id3">
+<h3>知识库<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+<p>nesssusd为每个主机都维护着一个知识库( <a class="reference internal" href="../a/a.html#kb"><em>KB</em></a> ), 它包含了一次测试过程中，所有脚本测试产生的信息。安全测试脚本从中读取内容，也会将获取的信息返回给知识库。端口的状态，实际上被记在知识库的某个地方。</p>
+<p>知识库被分为好几类。&#8221;Services&#8221;类包含了所有已经服务的端口。比如，Services/smtp 的值很可能是25.
+然而，如果远程主机有个隐藏的SMTP服务配置在2500端口而不是25端口上，那么该条记录的值会更新为2500。</p>
+<p>看 <a class="reference internal" href="../a/a.html#kb"><em>附录</em></a> 可以了解更多知识库的细节。</p>
+<dl class="docutils">
+<dt>基本上，有两个函数可以操作知识库。</dt>
+<dd><ul class="first last simple">
+<li>get_kb_item(&lt;name&gt;)用于获取&lt;name&gt;记录的值，这是个匿名参数。</li>
+<li>set_kb_item(name:&lt;name&gt;, value:&lt;value&gt;)用户设置一个新纪录的值。</li>
+</ul>
+</dd>
+</dl>
+<p>注意：你不能马上读取你刚刚设置的值。例如，以下代码可能不会有想象中的结果:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">set_kb_item</span><span class="p">(</span><span class="n">name</span><span class="p">:</span><span class="s">&quot;attack&quot;</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span><span class="n">TRUE</span><span class="p">);</span>
+<span class="k">if</span><span class="p">(</span><span class="n">get_kb_item</span><span class="p">(</span><span class="s">&quot;attack&quot;</span><span class="p">))</span>
+<span class="p">{</span>
+        <span class="c"># Perform the attack - will not be executed</span>
+        <span class="c"># because our local KB has not been updated</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>原因是因为安全考虑以及代码隔离。实际上，nessusd为每个新起的脚本拷贝一份知识库，而不是原始知识库，set_kb_item()函数会将值设置到原始知识库中，在当前正在跑的脚本中，nessusd是不会去更新它的拷贝知识库的。(<em>这点很重要</em>)</p>
+</div>
+</div>
+<div class="section" id="nasl">
+<h2>NASL脚本结构<a class="headerlink" href="#nasl" title="Permalink to this headline">¶</a></h2>
+<p>每个NASL脚本都必须向Nessus服务端注册自己。注册包括，脚本名称，描述，作者等等。
+这样，NASL脚本可能会是像下面这样的结构。</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c">#</span>
+<span class="c"># Nasl script to be used with nessusd</span>
+<span class="c">#</span>
+
+<span class="k">if</span><span class="p">(</span><span class="n">description</span><span class="p">)</span>
+<span class="p">{</span>
+        <span class="c"># register information here...</span>
+        <span class="c">#</span>
+        <span class="c"># I will call this section the &#39;register&#39;</span>
+        <span class="c"># section</span>
+        <span class="c">#</span>
+        <span class="nb">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+<span class="p">}</span>
+<span class="c">#</span>
+<span class="c"># Script code here. I will call this section the</span>
+<span class="c"># &#39;attack&#39; section.</span>
+<span class="c">#</span>
+</pre></div>
+</div>
+<p>description是一个全局变量，它会被设置成TRUE或者FALSE，基于该脚本必须还是非必须注册。</p>
+<div class="section" id="id4">
+<h3>注册部分<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>注册部分必须调用以下方法:</dt>
+<dd><ul class="first last">
+<li><p class="first">script_name(language1:&lt;name&gt;, [...]) 设置脚本名称，将会在客户端显示。</p>
+</li>
+<li><p class="first">script_description(language1:&lt;desc&gt;, [...]) 设置描述信息，用户点击脚本名称时显示。</p>
+</li>
+<li><p class="first">script_summary(language1:&lt;summary&gt;, [...]) 设置脚本摘要，将会在提示信息中显示。</p>
+</li>
+<li><dl class="first docutils">
+<dt>script_category(&lt;category&gt;) 设置脚本分类。必须是下列的其中之一。</dt>
+<dd><ul class="first last simple">
+<li>ACT_GATHER_INFO 脚本会在最开始被加载。这对远程主机无害。</li>
+<li>ACT_ATTACK      脚本会尝试去获取远程主机上的某些权限。可能会影响远程主机(比如在测试缓冲区溢出的时候)。</li>
+<li>ACT_DENIAL      尝试让远程主机宕机。</li>
+<li>ACT_SCANNER     端口扫描脚本。</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p class="first">script_copyright(language1:&lt;copyright&gt;, [...]) 设置脚本版权信息。可以是你的名字或者其他任何东西。</p>
+</li>
+<li><dl class="first docutils">
+<dt>script_family(language1:&lt;family&gt;, [...]) 设置脚本的族。这没有很明显的分类，你可以注册成&#8221;Joe&#8217;s PowerTools&#8221; ，但是我不提倡这样。当前已经有个族有：</dt>
+<dd><ul class="first last simple">
+<li>Backdoors</li>
+<li>CGI abuses</li>
+<li>Denial of Service</li>
+<li>FTP</li>
+<li>Finger abuses</li>
+<li>Firewalls</li>
+<li>Gain a shell remotely</li>
+<li>Gain root remotely</li>
+<li>Misc.</li>
+<li>NIS</li>
+<li>RPC</li>
+<li>Remote file access</li>
+<li>SMTP problems</li>
+<li>Useless services</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+<p>你可能已经注意到了，这些函数大部分由language1参数。实际上，并不是这样的。</p>
+<p>NASL提供了多语言支持。每个脚本必须至少支持英语。这些函数准确的语法应该是这样：</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">script_function</span><span class="p">(</span><span class="n">english</span><span class="p">:</span><span class="n">english_text</span><span class="p">,</span> <span class="p">[</span><span class="n">francais</span><span class="p">:</span><span class="n">french_text</span><span class="p">,</span>
+                                <span class="n">deutsch</span><span class="p">:</span><span class="n">german_text</span><span class="p">,</span>
+                                <span class="o">...</span><span class="p">]);</span>
+</pre></div>
+</div>
+<p>除此者外，script_dependencies()函数也可能被调用。它的作用是告诉nessusd，当前脚本是在某些其他脚本之后加载。这很有用，尤其你想要使用其他规则的测试结果时。语法是：</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">script_dependencies</span><span class="p">(</span><span class="n">filename1</span> <span class="p">[,</span><span class="n">filename2</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="n">filenameN</span><span class="p">]);</span>
+</pre></div>
+</div>
+<p>filename参数就是脚本在磁盘上存储的名称。</p>
+</div>
+<div class="section" id="id5">
+<h3>攻击部分<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>
+<p>攻击部分可能包含任何你认为对攻击测试有用的代码。
+一旦你的攻击完成，你可以通过security_warning()或者security_hole()函数来打印报告。
+security_warning()用于攻击成功，但并不是一个很严重的漏洞，意指这个漏洞并不会导致攻击者立马获取访问权限。
+这两个函数的语法如下:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">security_warning</span><span class="p">(</span><span class="o">&lt;</span><span class="n">port</span><span class="o">&gt;</span> <span class="p">[,</span> <span class="n">protocol</span><span class="p">:</span><span class="o">&lt;</span><span class="n">proto</span><span class="o">&gt;</span><span class="p">]);</span>
+<span class="n">security_hole</span><span class="p">(</span><span class="o">&lt;</span><span class="n">port</span><span class="o">&gt;</span> <span class="p">[,</span> <span class="n">protocol</span><span class="p">:</span><span class="o">&lt;</span><span class="n">proto</span><span class="o">&gt;</span><span class="p">]);</span>
+
+<span class="n">security_warning</span><span class="p">(</span><span class="n">port</span><span class="p">:</span><span class="o">&lt;</span><span class="n">port</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span><span class="o">&lt;</span><span class="n">data</span><span class="o">&gt;</span> <span class="p">[,</span> <span class="n">protocol</span><span class="p">:</span><span class="o">&lt;</span><span class="n">proto</span><span class="o">&gt;</span><span class="p">]);</span>
+<span class="n">security_hole</span><span class="p">(</span><span class="n">port</span><span class="p">:</span><span class="o">&lt;</span><span class="n">port</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span><span class="o">&lt;</span><span class="n">data</span><span class="o">&gt;</span> <span class="p">[,</span> <span class="n">protocol</span><span class="p">:</span><span class="o">&lt;</span><span class="n">proto</span><span class="o">&gt;</span><span class="p">]);</span>
+</pre></div>
+</div>
+<p>第一种情况，客户端显示的是script_description()函数定义的脚本描述信息。由于多语言支持的存在，这很方便。
+第二种情况，客户端显示的是data参数的内容。这同样很方便，比如必须显示版本信息的时候。</p>
+</div>
+<div class="section" id="cve">
+<h3>CVE兼容<a class="headerlink" href="#cve" title="Permalink to this headline">¶</a></h3>
+<p>CVE是一个试图解决所有安全漏洞之间关系的产品。访问 <a class="reference external" href="http://cve.mitre.org">cve.mitre.org</a> 获取更多信息。</p>
+<p>Nessus是完全CVE兼容的。如果你正在为一个CVE定义过的漏洞编写脚本，请在描述部分调用script_cve_id()函数，用法如下:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">script_cve_id</span><span class="p">(</span><span class="n">string</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>例子:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">script_cve_id</span><span class="p">(</span><span class="s">&quot;CVE-1999-0991&quot;</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>相对与仅仅在报告中打印出CVE编号，单独调用这个函数非常重要，Nessus客户端会积极的使用这个函数带来的信息。</p>
+</div>
+<div class="section" id="id6">
+<h3>一个例子<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h3>
+<p>除了安全测试， NASL也可以做一些维护工作。比如下面这个例子，该脚本会取人哪些主机运行着SSH，哪些主机没有运行SSH。</p>
+<div class="highlight-python"><pre>#
+# Check for ssh
+#
+if(description)
+{
+        script_name(english:"Ensure the presence of ssh");
+        script_description(english:"This script makes sure that ssh is running");
+        script_summary(english:"connects on remote tcp port 22");
+        script_category(ACT_GATHER_INFO);
+        script_family(english:"Administration toolbox");
+        script_copyright(english:"This script was written by Joe U.");
+        script_dependencies("find_service.nes");
+        exit(0);
+}
+#
+# First, ssh may run on another port.
+# That's why we rely on the plugin 'find_service'
+#
+port = get_kb_item("Services/ssh");
+if(!port)
+        port = 22;
+# declare that ssh is not installed yet
+ok = 0;
+if(get_port_state(port))
+{
+        soc = open_sock_tcp(port);
+        if(soc)
+        {
+                # Check that ssh is not tcpwrapped. And that it's really
+                # SSH
+                data = recv(socket:soc, length:200);
+                if("SSH" &gt;&lt; data)
+                        ok = 1;
+        }
+        close(soc);
+}
+#
+# Only warn the user that SSH is NOT installed
+#
+if(!ok)
+{
+        report = "SSH is not running on this host !";
+        security_warning(port:22, data:report);
+}</pre>
+</div>
+</div>
+</div>
+<div class="section" id="id7">
+<h2>调整你的脚本<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h2>
+<p>在一次测试过程中，nessusd可能会加载超过200条脚本。如果脚本都没有优化过，那么将耗费很长的时间去执行他们。这也是为什么需要你确保你的脚本越快越好。</p>
+<div class="section" id="nessusd">
+<h3>要求nessusd仅在需要的时候才执行脚本<a class="headerlink" href="#nessusd" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>优化脚本的最好的方法是告诉nessusd，你的脚本在什么情况下是不需要加载的。比如，你的脚本尝试连接到远程TCP端口123。如果nessusd已知这个端口是关闭的，则不需要执行你的脚本，因为即使执行了也得不到任何结果。script_require_ports(),script_require_keys(),script_exclude_keys()函数就是用于这个目的的。在脚本的描述部分就需要调用。</dt>
+<dd><ul class="first last">
+<li><dl class="first docutils">
+<dt>script_require_ports(&lt;port1&gt;, &lt;port2&gt;, ...)</dt>
+<dd><p class="first">仅当参数中列出的端口至少有一个开放时，才会执行你的脚本。&lt;port&gt;参数可以是整数(例如:80)或者一个 <a class="reference internal" href="../a/a.html#kb"><em>KB</em></a> 中定义的字符串(例如:&#8221;Services/www&#8221;)。</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">script_require_ports</span><span class="p">(</span><span class="mi">80</span><span class="p">,</span> <span class="s">&quot;Services/www&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="last">注意，如果端口状态是未知(比如还没有扫描任何端口)，脚本还是会被执行。</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>script_require_keys(&lt;key1&gt;, &lt;key2&gt;, ...)</dt>
+<dd><p class="first">仅当 <a class="reference internal" href="../a/a.html#kb"><em>KB</em></a> 中包含所有参数值时，nessusd才会执行你的脚本。</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">script_require_keys</span><span class="p">(</span><span class="s">&quot;ftp/anonymous&quot;</span><span class="p">,</span> <span class="s">&quot;ftp/writeable_dir&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="last">仅当远程FTP服务器提供匿名访问，且存在可以文件夹时，才会执行脚本。</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>script_exclude_keys(&lt;key1&gt;, &lt;key2&gt;, ...)</dt>
+<dd><p class="first last">当 <a class="reference internal" href="../a/a.html#kb"><em>KB</em></a> 中没有包含所给参数中的至少一个时，nessusd将不会执行你的脚本</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</div>
+<div class="section" id="id8">
+<h3>使用其他脚本的结果<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h3>
+<p>写脚本之前先看下 <a class="reference internal" href="../a/a.html#kb"><em>KB</em></a> ，不要做别的脚本已经做过的事情。例如，在使用open_sock_tcp()打开一个端口时，先通过get_port_state()函数确认这个端口是否已经打开。少即是快。</p>
+</div>
+</div>
+<div class="section" id="id9">
+<h2>那么，你想分享你的新脚本咯?<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>如果你计划要分享你的脚本，那么你应该遵循以下规则:</dt>
+<dd><ul class="first last simple">
+<li>你的脚本必须不能同用户交互。NASL脚本在服务端执行，所有的输出都不会被用户看到。</li>
+<li>你的脚本必须只检测一个漏洞。如果你知道如何检测多个漏洞，请写多条脚本。所以，你可以保持所有脚本的一致性</li>
+<li>你的脚本应该属于一个已知的分类。如果你计划分享你的脚本，那么请避免创建例如&#8217;Joe&#8217;s Power Tools&#8217; 这样的分类，试着保持一致。</li>
+<li>查看CVE是否已经存在一个关于你的脚本的定义。如果你关心CVE兼容性，Nessus维护者就不用自己做这些事情了，这也会节省他的时间。</li>
+<li>把它发送给我。是的，就是 <a class="reference internal" href="../about/about.html#authorsrc"><em>我</em></a> :)。如果你计划去分享你的脚本，那么，就让任何人都可以使用它吗，而不仅仅是你的朋友或者你所拥有的一个组内。一旦你的脚本被加入到Nessus规则集中，它将会被分配一个唯一的ID号。</li>
+</ul>
+</dd>
+</dl>
+</div>
+</div>
+
+
+
+            <div class="section" id="discuss">
+    <h2>
+        讨论
+        <a class="headerlink" href="#discuss" title="永久链接至标题">¶</a>
+    </h2>
+    <div id="disqus_thread"></div>
+    <script type="text/javascript">
+        /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+        var disqus_shortname = 'YOUR-DISQUS-FORUM-SHORTNAME'; // required: replace example with your forum shortname
+
+        /* * * DON'T EDIT BELOW THIS LINE * * */
+        (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../conclusion/conclusion.html" title="小结"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../string/string.html" title="字符串处理函数"
+             >previous</a> |</li>
+        <li><a href="../index.html">Nessus NASL脚本参考手册 1.0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Xiaxiaoyu.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.2b3.
+    </div>
+  </body>
+</html>
