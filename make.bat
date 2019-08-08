@@ -30,6 +30,7 @@ if "%1" == "help" (
 	echo.  latex      to make LaTeX files, you can set PAPER=a4 or PAPER=letter
 	echo.  text       to make text files
 	echo.  man        to make manual pages
+	echo.  pdf        to pdf document
 	echo.  texinfo    to make Texinfo files
 	echo.  gettext    to make PO message catalogs
 	echo.  changes    to make an overview over all changed/added/deprecated items
@@ -37,6 +38,7 @@ if "%1" == "help" (
 	echo.  pseudoxml  to make pseudoxml-XML files for display purposes
 	echo.  linkcheck  to check all external links for integrity
 	echo.  doctest    to run all doctests embedded in the documentation if enabled
+
 	goto end
 )
 
@@ -237,6 +239,14 @@ if "%1" == "pseudoxml" (
 	echo.
 	echo.Build finished. The pseudo-XML files are in %BUILDDIR%/pseudoxml.
 	goto end
+)
+
+if "%1" == "pdf" (
+  %SPHINXBUILD% -b pdf %ALLSPHINXOPTS% %BUILDDIR%/pdf
+  if errorlevel 1 exit /b 1
+  echo.
+  echo.Build finished. The pdf files are in %BUILDDIR%/pdf.
+  goto end
 )
 
 :end
